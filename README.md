@@ -2,6 +2,12 @@
 
 WPF desktop app (.NET 8, Windows). Reads your Garmin Connect data and lets a Claude-powered AI coach analyze it. Two-pane layout: dashboard on the left (cards, charts, recent activities, generated written report), chat on the right (multi-turn conversation with the coach, fed the same data as context).
 
+## About
+
+A personal-use Windows tool for athletes who want their Garmin watch data interpreted by an actual coach instead of stared at as a wall of numbers. The watch already knows your resting HR, sleep stages, training load, and what you did this week. What it doesn't tell you is whether you're walking into an overreach, whether yesterday's run was too hard given your sleep, or what to do tomorrow. This app closes that loop: it pulls a fresh snapshot from Garmin Connect, hands it to Claude with a coach persona, and you get back grounded, numbers-cited feedback — either as a written report or as a back-and-forth chat.
+
+Built for one user (you), not a SaaS — credentials live on your machine in DPAPI-encrypted form, you bring your own Anthropic API key, and there's no backend in the middle. Reads only; the app never writes anything back to Garmin.
+
 ## What it does
 
 - Logs into Garmin Connect with email/password (community library `Unofficial.Garmin.Connect`)
