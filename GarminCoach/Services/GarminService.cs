@@ -54,29 +54,63 @@ public sealed class GarminService : IGarminService, IDisposable
         var today = DateTime.Today;
         var startDate = today.AddDays(-(days - 1));
 
+        // HRV in one ranged call
+        var hrvByDate = await FetchHrvAsync(client, startDate, today, ct);
+
         var daily = new List<DailyMetrics>();
         for (int i = 0; i < days; i++)
         {
             var date = startDate.AddDays(i);
-            daily.Add(await FetchDayAsync(client, date, ct));
+            hrvByDate.TryGetValue(DateOnly.FromDateTime(date), out var hrv);
+            daily.Add(await FetchDayAsync(client, date, hrv, ct));
         }
 
         var activities = await FetchActivitiesAsync(client, startDate, today, ct);
+        var aggregates = ActivityAggregator.AggregateByCategory(activities);
 
         return new CoachSnapshot(
             FetchedAt: DateTime.Now,
             UserDisplayName: displayName,
             Days: daily,
-            RecentActivities: activities);
+            RecentActivities: activities,
+            CategoryAggregates: aggregates);
     }
 
-    private async Task<DailyMetrics> FetchDayAsync(GarminConnectClient client, DateTime date, CancellationToken ct)
+    private async Task<Dictionary<DateOnly, Garmin.Connect.Models.GarminHrvSummary>> FetchHrvAsync(
+        GarminConnectClient client, DateTime from, DateTime to, CancellationToken ct)
+    {
+        var result = new Dictionary<DateOnly, Garmin.Connect.Models.GarminHrvSummary>();
+        try
+        {
+            var report = await client.GetReportHrvStatus(from, to, ct);
+            if (report?.HrvSummaries != null)
+            {
+                foreach (var s in report.HrvSummaries)
+                {
+                    result[s.CalendarDate] = s;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "HRV fetch failed");
+        }
+        return result;
+    }
+
+    private async Task<DailyMetrics> FetchDayAsync(
+        GarminConnectClient client,
+        DateTime date,
+        Garmin.Connect.Models.GarminHrvSummary? hrv,
+        CancellationToken ct)
     {
         int? steps = null, stepGoal = null;
         int? rhr = null, maxHr = null, minHr = null;
         double? sleepHours = null;
         int? sleepScore = null;
-        int? bbMin = null, bbMax = null;
+        double? sleepDeep = null, sleepLight = null, sleepRem = null, sleepAwake = null;
+        int? avgSleepStress = null;
+        int? bbMin = null, bbMax = null, bbCharged = null, bbDrained = null;
         int? stress = null, resp = null;
         double? weight = null;
 
@@ -94,6 +128,8 @@ public sealed class GarminService : IGarminService, IDisposable
                 resp = summary.AvgWakingRespirationValue > 0 ? (int)Math.Round(summary.AvgWakingRespirationValue) : null;
                 bbMin = NullIfZero((int)summary.BodyBatteryLowestValue);
                 bbMax = NullIfZero((int)summary.BodyBatteryHighestValue);
+                bbCharged = NullIfZero((int)summary.BodyBatteryChargedValue);
+                bbDrained = NullIfZero((int)summary.BodyBatteryDrainedValue);
             }
         }
         catch (Exception ex)
@@ -108,6 +144,11 @@ public sealed class GarminService : IGarminService, IDisposable
             if (dto != null && dto.SleepTimeSeconds > 0)
             {
                 sleepHours = dto.SleepTimeSeconds / 3600.0;
+                if (dto.DeepSleepSeconds > 0) sleepDeep = dto.DeepSleepSeconds / 3600.0;
+                if (dto.LightSleepSeconds > 0) sleepLight = dto.LightSleepSeconds / 3600.0;
+                if (dto.RemSleepSeconds > 0) sleepRem = dto.RemSleepSeconds / 3600.0;
+                if (dto.AwakeSleepSeconds > 0) sleepAwake = dto.AwakeSleepSeconds / 3600.0;
+                if (dto.AvgSleepStress > 0) avgSleepStress = (int)Math.Round(dto.AvgSleepStress);
             }
             var overall = dto?.SleepScores?.Overall?.Value ?? 0;
             sleepScore = overall > 0 ? (int)overall : null;
@@ -140,10 +181,20 @@ public sealed class GarminService : IGarminService, IDisposable
             MinHeartRate: minHr,
             SleepHours: sleepHours,
             SleepScore: sleepScore,
+            SleepDeepHours: sleepDeep,
+            SleepLightHours: sleepLight,
+            SleepRemHours: sleepRem,
+            SleepAwakeHours: sleepAwake,
+            AvgSleepStress: avgSleepStress,
             BodyBatteryMin: bbMin,
             BodyBatteryMax: bbMax,
+            BodyBatteryCharged: bbCharged,
+            BodyBatteryDrained: bbDrained,
             StressAvg: stress,
             AverageRespiration: resp,
+            HrvOvernight: hrv?.LastNightAvg > 0 ? hrv.LastNightAvg : null,
+            HrvWeeklyAvg: hrv?.WeeklyAvg > 0 ? hrv.WeeklyAvg : null,
+            HrvStatus: hrv?.Status,
             Weight: weight);
     }
 

@@ -4,10 +4,12 @@ public sealed record CoachSnapshot(
     DateTime FetchedAt,
     string? UserDisplayName,
     IReadOnlyList<DailyMetrics> Days,
-    IReadOnlyList<ActivitySummary> RecentActivities)
+    IReadOnlyList<ActivitySummary> RecentActivities,
+    IReadOnlyList<ActivityCategoryAggregate> CategoryAggregates)
 {
     public static CoachSnapshot Empty(string? user = null) =>
-        new(DateTime.MinValue, user, Array.Empty<DailyMetrics>(), Array.Empty<ActivitySummary>());
+        new(DateTime.MinValue, user, Array.Empty<DailyMetrics>(),
+            Array.Empty<ActivitySummary>(), Array.Empty<ActivityCategoryAggregate>());
 
     public bool IsEmpty => Days.Count == 0 && RecentActivities.Count == 0;
 }

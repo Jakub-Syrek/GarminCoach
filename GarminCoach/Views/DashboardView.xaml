@@ -18,120 +18,209 @@
             <Setter Property="Margin" Value="0,0,0,4"/>
         </Style>
         <Style x:Key="CardValue" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="FontSize" Value="20"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="#FF1F2329"/>
         </Style>
+        <Style x:Key="SectionHeader" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#FF1F2329"/>
+            <Setter Property="Margin" Value="6,12,0,4"/>
+        </Style>
     </UserControl.Resources>
 
-    <Grid Margin="16">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="220"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
-            <Button Content="Odśwież dane" Padding="12,6" Command="{Binding RefreshCommand}"
-                    IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBool}}"/>
-            <Button Content="Generuj raport coacha" Padding="12,6" Margin="8,0,0,0"
-                    Command="{Binding GenerateReportCommand}"
-                    IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBool}}"/>
-            <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center" Margin="16,0,0,0"
-                       Foreground="#FF555555"/>
-        </StackPanel>
-
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <Border Style="{StaticResource CardStyle}" Grid.Column="0">
-                <StackPanel>
-                    <TextBlock Text="Kroki dziś" Style="{StaticResource CardLabel}"/>
-                    <TextBlock Text="{Binding StepsToday}" Style="{StaticResource CardValue}"/>
-                </StackPanel>
-            </Border>
-            <Border Style="{StaticResource CardStyle}" Grid.Column="1">
-                <StackPanel>
-                    <TextBlock Text="Tętno spoczynkowe" Style="{StaticResource CardLabel}"/>
-                    <TextBlock Text="{Binding RestingHr}" Style="{StaticResource CardValue}"/>
-                </StackPanel>
-            </Border>
-            <Border Style="{StaticResource CardStyle}" Grid.Column="2">
-                <StackPanel>
-                    <TextBlock Text="Sen (ostatni)" Style="{StaticResource CardLabel}"/>
-                    <TextBlock Text="{Binding SleepLast}" Style="{StaticResource CardValue}"/>
-                </StackPanel>
-            </Border>
-            <Border Style="{StaticResource CardStyle}" Grid.Column="3">
-                <StackPanel>
-                    <TextBlock Text="Body Battery" Style="{StaticResource CardLabel}"/>
-                    <TextBlock Text="{Binding BodyBattery}" Style="{StaticResource CardValue}"/>
-                </StackPanel>
-            </Border>
-        </Grid>
-
-        <Grid Grid.Row="2" Margin="0,8,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <Border Style="{StaticResource CardStyle}" Grid.Column="0">
-                <DockPanel>
-                    <TextBlock DockPanel.Dock="Top" Text="Resting HR" Style="{StaticResource CardLabel}"/>
-                    <lvc:CartesianChart Series="{Binding HrSeries}"
-                                        XAxes="{Binding XAxes}"
-                                        YAxes="{Binding YAxesHr}"
-                                        LegendPosition="Hidden"/>
-                </DockPanel>
-            </Border>
-
-            <Border Style="{StaticResource CardStyle}" Grid.Column="1">
-                <DockPanel>
-                    <TextBlock DockPanel.Dock="Top" Text="Sen (h)" Style="{StaticResource CardLabel}"/>
-                    <lvc:CartesianChart Series="{Binding SleepSeries}"
-                                        XAxes="{Binding XAxes}"
-                                        YAxes="{Binding YAxesSleep}"
-                                        LegendPosition="Hidden"/>
-                </DockPanel>
-            </Border>
-        </Grid>
-
-        <Border Grid.Row="3" Style="{StaticResource CardStyle}">
-            <DockPanel>
-                <TextBlock DockPanel.Dock="Top" Text="Aktywności" Style="{StaticResource CardLabel}"/>
-                <DataGrid ItemsSource="{Binding Activities}"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="True"
-                          HeadersVisibility="Column"
-                          GridLinesVisibility="Horizontal"
-                          BorderThickness="0"
-                          RowHeight="26">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Data" Binding="{Binding StartTime, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" Width="140"/>
-                        <DataGridTextColumn Header="Typ" Binding="{Binding ActivityType}" Width="120"/>
-                        <DataGridTextColumn Header="Nazwa" Binding="{Binding Name}" Width="*"/>
-                        <DataGridTextColumn Header="Czas" Binding="{Binding Duration, StringFormat='{}{0:hh\\:mm\\:ss}'}" Width="80"/>
-                        <DataGridTextColumn Header="Dyst [km]" Binding="{Binding DistanceMeters, StringFormat='{}{0:F2}', ConverterParameter=1000}" Width="90"/>
-                        <DataGridTextColumn Header="avgHR" Binding="{Binding AverageHr, StringFormat='{}{0:F0}'}" Width="70"/>
-                        <DataGridTextColumn Header="kcal" Binding="{Binding Calories, StringFormat='{}{0:F0}'}" Width="70"/>
-                    </DataGrid.Columns>
-                </DataGrid>
-            </DockPanel>
-        </Border>
-
-        <Border Grid.Row="4" Style="{StaticResource CardStyle}"
-                Visibility="{Binding ReportText, Converter={StaticResource StringToVis}}">
-            <StackPanel>
-                <TextBlock Text="Raport coacha" Style="{StaticResource CardLabel}"/>
-                <TextBlock Text="{Binding ReportText}" TextWrapping="Wrap" FontSize="13"/>
+    <DockPanel>
+        <Border DockPanel.Dock="Top" Padding="10,8" Background="White" BorderBrush="#FFE5E5E8" BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="Odśwież dane" Padding="12,6" Command="{Binding RefreshCommand}"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBool}}"/>
+                <Button Content="Generuj raport coacha" Padding="12,6" Margin="8,0,0,0"
+                        Command="{Binding GenerateReportCommand}"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBool}}"/>
+                <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center" Margin="16,0,0,0"
+                           Foreground="#FF555555"/>
             </StackPanel>
         </Border>
-    </Grid>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="10">
+            <StackPanel>
+                <!-- 6 cards row -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Style="{StaticResource CardStyle}" Grid.Column="0">
+                        <StackPanel>
+                            <TextBlock Text="Kroki" Style="{StaticResource CardLabel}"/>
+                            <TextBlock Text="{Binding StepsToday}" Style="{StaticResource CardValue}"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource CardStyle}" Grid.Column="1">
+                        <StackPanel>
+                            <TextBlock Text="Resting HR" Style="{StaticResource CardLabel}"/>
+                            <TextBlock Text="{Binding RestingHr}" Style="{StaticResource CardValue}"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource CardStyle}" Grid.Column="2">
+                        <StackPanel>
+                            <TextBlock Text="Sen" Style="{StaticResource CardLabel}"/>
+                            <TextBlock Text="{Binding SleepLast}" Style="{StaticResource CardValue}"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource CardStyle}" Grid.Column="3">
+                        <StackPanel>
+                            <TextBlock Text="Body Battery" Style="{StaticResource CardLabel}"/>
+                            <TextBlock Text="{Binding BodyBattery}" Style="{StaticResource CardValue}"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource CardStyle}" Grid.Column="4">
+                        <StackPanel>
+                            <TextBlock Text="HRV" Style="{StaticResource CardLabel}"/>
+                            <TextBlock Text="{Binding HrvLast}" Style="{StaticResource CardValue}"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource CardStyle}" Grid.Column="5">
+                        <StackPanel>
+                            <TextBlock Text="Stres" Style="{StaticResource CardLabel}"/>
+                            <TextBlock Text="{Binding StressLast}" Style="{StaticResource CardValue}"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- Row 1: HR + Stress -->
+                <TextBlock Text="Tętno i stres" Style="{StaticResource SectionHeader}"/>
+                <Grid Height="220">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Style="{StaticResource CardStyle}" Grid.Column="0">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="Resting HR" Style="{StaticResource CardLabel}"/>
+                            <lvc:CartesianChart Series="{Binding HrSeries}" XAxes="{Binding XAxes}"
+                                                YAxes="{Binding YAxesHr}" LegendPosition="Hidden"/>
+                        </DockPanel>
+                    </Border>
+                    <Border Style="{StaticResource CardStyle}" Grid.Column="1">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="Stres (avg)" Style="{StaticResource CardLabel}"/>
+                            <lvc:CartesianChart Series="{Binding StressSeries}" XAxes="{Binding XAxes}"
+                                                YAxes="{Binding YAxesStress}" LegendPosition="Hidden"/>
+                        </DockPanel>
+                    </Border>
+                </Grid>
+
+                <!-- Row 2: Sleep stages + HRV -->
+                <TextBlock Text="Sen i regeneracja" Style="{StaticResource SectionHeader}"/>
+                <Grid Height="240">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Style="{StaticResource CardStyle}" Grid.Column="0">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="Fazy snu (h)" Style="{StaticResource CardLabel}"/>
+                            <lvc:CartesianChart Series="{Binding SleepStagesSeries}" XAxes="{Binding XAxes}"
+                                                YAxes="{Binding YAxesSleep}" LegendPosition="Bottom"/>
+                        </DockPanel>
+                    </Border>
+                    <Border Style="{StaticResource CardStyle}" Grid.Column="1">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="HRV overnight (ms)" Style="{StaticResource CardLabel}"/>
+                            <lvc:CartesianChart Series="{Binding HrvSeries}" XAxes="{Binding XAxes}"
+                                                YAxes="{Binding YAxesHrv}" LegendPosition="Hidden"/>
+                        </DockPanel>
+                    </Border>
+                </Grid>
+
+                <!-- Row 3: Body battery + Activity volume -->
+                <TextBlock Text="Energia i wolumen treningowy" Style="{StaticResource SectionHeader}"/>
+                <Grid Height="240">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Style="{StaticResource CardStyle}" Grid.Column="0">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="Body Battery: naładowane vs zużyte"
+                                       Style="{StaticResource CardLabel}"/>
+                            <lvc:CartesianChart Series="{Binding BodyBatterySeries}" XAxes="{Binding XAxes}"
+                                                YAxes="{Binding YAxesBB}" LegendPosition="Bottom"/>
+                        </DockPanel>
+                    </Border>
+                    <Border Style="{StaticResource CardStyle}" Grid.Column="1">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="Minuty treningu wg dyscypliny"
+                                       Style="{StaticResource CardLabel}"/>
+                            <lvc:CartesianChart Series="{Binding ActivityVolumeSeries}" XAxes="{Binding XAxes}"
+                                                YAxes="{Binding YAxesVolume}" LegendPosition="Bottom"/>
+                        </DockPanel>
+                    </Border>
+                </Grid>
+
+                <!-- Category aggregates -->
+                <TextBlock Text="Podsumowanie wg dyscypliny" Style="{StaticResource SectionHeader}"/>
+                <Border Style="{StaticResource CardStyle}">
+                    <DataGrid ItemsSource="{Binding CategoryAggregates}"
+                              AutoGenerateColumns="False" IsReadOnly="True"
+                              HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                              BorderThickness="0" RowHeight="26" MaxHeight="220">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Kategoria" Width="150"
+                                                Binding="{Binding Category}"/>
+                            <DataGridTextColumn Header="Sesji" Width="60"
+                                                Binding="{Binding SessionCount}"/>
+                            <DataGridTextColumn Header="Czas" Width="100"
+                                                Binding="{Binding TotalDuration, StringFormat='{}{0:h\\:mm\\:ss}'}"/>
+                            <DataGridTextColumn Header="Dystans [km]" Width="110"
+                                                Binding="{Binding TotalDistanceMeters, StringFormat='{}{0:F1}'}"/>
+                            <DataGridTextColumn Header="D+ [m]" Width="80"
+                                                Binding="{Binding TotalElevationGainMeters, StringFormat='{}{0:F0}'}"/>
+                            <DataGridTextColumn Header="avgHR" Width="70"
+                                                Binding="{Binding AverageHr, StringFormat='{}{0:F0}'}"/>
+                            <DataGridTextColumn Header="Kalorie" Width="80"
+                                                Binding="{Binding TotalCalories, StringFormat='{}{0:F0}'}"/>
+                            <DataGridTextColumn Header="TSS" Width="*"
+                                                Binding="{Binding TotalTrainingLoad, StringFormat='{}{0:F0}'}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+
+                <!-- All activities -->
+                <TextBlock Text="Aktywności" Style="{StaticResource SectionHeader}"/>
+                <Border Style="{StaticResource CardStyle}">
+                    <DataGrid ItemsSource="{Binding Activities}"
+                              AutoGenerateColumns="False" IsReadOnly="True"
+                              HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                              BorderThickness="0" RowHeight="26" MaxHeight="300">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Data" Binding="{Binding StartTime, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" Width="140"/>
+                            <DataGridTextColumn Header="Typ" Binding="{Binding ActivityType}" Width="140"/>
+                            <DataGridTextColumn Header="Nazwa" Binding="{Binding Name}" Width="*"/>
+                            <DataGridTextColumn Header="Czas" Binding="{Binding Duration, StringFormat='{}{0:hh\\:mm\\:ss}'}" Width="80"/>
+                            <DataGridTextColumn Header="Dyst [m]" Binding="{Binding DistanceMeters, StringFormat='{}{0:F0}'}" Width="90"/>
+                            <DataGridTextColumn Header="D+ [m]" Binding="{Binding ElevationGainMeters, StringFormat='{}{0:F0}'}" Width="80"/>
+                            <DataGridTextColumn Header="avgHR" Binding="{Binding AverageHr, StringFormat='{}{0:F0}'}" Width="70"/>
+                            <DataGridTextColumn Header="kcal" Binding="{Binding Calories, StringFormat='{}{0:F0}'}" Width="70"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+
+                <!-- Coach report -->
+                <Border Style="{StaticResource CardStyle}"
+                        Visibility="{Binding ReportText, Converter={StaticResource StringToVis}}">
+                    <StackPanel>
+                        <TextBlock Text="Raport coacha" Style="{StaticResource CardLabel}"/>
+                        <TextBlock Text="{Binding ReportText}" TextWrapping="Wrap" FontSize="13"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
 </UserControl>
