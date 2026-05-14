@@ -24,10 +24,6 @@ public partial class SettingsDialog : Window
         }
     }
 
-    private void OnSaveClick(object sender, RoutedEventArgs e)
-    {
-    }
-
     private void OnCloseClick(object sender, RoutedEventArgs e)
     {
         DialogResult = _vm.Saved;

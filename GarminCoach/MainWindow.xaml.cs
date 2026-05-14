@@ -16,6 +16,7 @@ public partial class MainWindow : Window
         _settings = settings;
         _settingsVm = settingsVm;
         Loaded += OnLoaded;
+        StateChanged += OnStateChanged;
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
@@ -34,5 +35,24 @@ public partial class MainWindow : Window
         _settingsVm.Reload();
         var dlg = new SettingsDialog(_settingsVm) { Owner = this };
         dlg.ShowDialog();
+    }
+
+    private void OnMinimize(object sender, RoutedEventArgs e) =>
+        WindowState = WindowState.Minimized;
+
+    private void OnMaximize(object sender, RoutedEventArgs e) =>
+        WindowState = WindowState == WindowState.Maximized
+            ? WindowState.Normal
+            : WindowState.Maximized;
+
+    private void OnClose(object sender, RoutedEventArgs e) => Close();
+
+    private void OnStateChanged(object? sender, EventArgs e)
+    {
+        if (MaximizeBtn != null)
+        {
+            // E922 = single square (Maximize), E923 = restore (two overlapping squares)
+            MaximizeBtn.Content = WindowState == WindowState.Maximized ? "" : "";
+        }
     }
 }

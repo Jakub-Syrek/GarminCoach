@@ -1,63 +1,107 @@
 <Window x:Class="GarminCoach.Views.SettingsDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         Title="Ustawienia GarminCoach"
-        Width="520" Height="420"
+        Width="560" Height="540"
         WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
         ResizeMode="NoResize"
-        Background="#FFF7F7F8">
-    <Grid Margin="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+        Background="{StaticResource Bg0}"
+        FontFamily="{StaticResource UiFont}">
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="40" ResizeBorderThickness="0"
+                            CornerRadius="0" GlassFrameThickness="0" UseAeroCaptionButtons="False"/>
+    </shell:WindowChrome.WindowChrome>
 
-        <StackPanel Grid.Row="0" Margin="0,0,0,12">
-            <TextBlock Text="Konfiguracja połączeń" FontSize="18" FontWeight="SemiBold"/>
-            <TextBlock TextWrapping="Wrap" Foreground="#FF555555"
-                       Text="Dane logowania są szyfrowane przez Windows DPAPI i przechowywane lokalnie w %AppData%\GarminCoach."/>
-        </StackPanel>
+    <Border BorderBrush="{StaticResource Border0}" BorderThickness="1">
+        <DockPanel LastChildFill="True">
 
-        <StackPanel Grid.Row="1">
-            <TextBlock Text="Email Garmin Connect" Margin="0,8,0,4"/>
-            <TextBox Text="{Binding GarminEmail, UpdateSourceTrigger=PropertyChanged}" Padding="6,4"/>
+            <Border DockPanel.Dock="Top" Height="40" Background="{StaticResource HeaderBg}"
+                    BorderBrush="{StaticResource Border0}" BorderThickness="0,0,0,1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Ustawienia" Margin="16,0,0,0" VerticalAlignment="Center"
+                               Foreground="{StaticResource TextHi}" FontSize="13" FontWeight="SemiBold"/>
+                    <Button Grid.Column="1" Style="{StaticResource IconButton}" Content="&#xE8BB;"
+                            Click="OnCloseClick" WindowChrome.IsHitTestVisibleInChrome="True"/>
+                </Grid>
+            </Border>
 
-            <TextBlock Text="Hasło Garmin Connect" Margin="0,8,0,4"/>
-            <PasswordBox x:Name="PasswordBoxControl" Padding="6,4" PasswordChanged="OnPasswordChanged"/>
+            <Border DockPanel.Dock="Bottom" Background="{StaticResource Bg1}"
+                    BorderBrush="{StaticResource Border0}" BorderThickness="0,1,0,0"
+                    Padding="20,14">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Style="{StaticResource PillAccent}"
+                            HorizontalAlignment="Left" VerticalAlignment="Center"
+                            Visibility="{Binding Saved, Converter={StaticResource BoolToVis}}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE73E;" FontFamily="{StaticResource IconFont}" FontSize="11"
+                                       Foreground="{StaticResource Accent}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Zapisano" Foreground="{StaticResource Accent}" FontSize="11"
+                                       FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <Button Style="{StaticResource GhostButton}" Content="Zamknij" Click="OnCloseClick"/>
+                        <Button Style="{StaticResource AccentButton}" Content="Zapisz"
+                                Margin="8,0,0,0" Command="{Binding SaveCommand}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
 
-            <TextBlock Text="Klucz Anthropic API (sk-ant-...)" Margin="0,8,0,4"/>
-            <TextBox Text="{Binding AnthropicApiKey, UpdateSourceTrigger=PropertyChanged}" Padding="6,4"/>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24,16">
+                <StackPanel>
+                    <TextBlock Text="Konfiguracja połączeń" Style="{StaticResource TitleLarge}"/>
+                    <TextBlock TextWrapping="Wrap" Margin="0,4,0,16" Foreground="{StaticResource TextLo}"
+                               FontSize="12" LineHeight="18"
+                               Text="Dane logowania są szyfrowane przez Windows DPAPI i przechowywane lokalnie w %AppData%\GarminCoach. Czyta je wyłącznie Twoje konto Windows na tej maszynie."/>
 
-            <Grid Margin="0,8,0,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="20"/>
-                    <ColumnDefinition Width="160"/>
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0">
-                    <TextBlock Text="Model Claude"/>
-                    <ComboBox Margin="0,4,0,0"
-                              SelectedValue="{Binding Model}"
-                              SelectedValuePath="Content">
-                        <ComboBoxItem Content="claude-haiku-4-5-20251001"/>
-                        <ComboBoxItem Content="claude-sonnet-4-6"/>
-                        <ComboBoxItem Content="claude-opus-4-7"/>
-                    </ComboBox>
+                    <TextBlock Text="EMAIL GARMIN CONNECT" Style="{StaticResource LabelMicro}" Margin="0,8,0,4"/>
+                    <TextBox Style="{StaticResource DarkTextBox}"
+                             Text="{Binding GarminEmail, UpdateSourceTrigger=PropertyChanged}"/>
+
+                    <TextBlock Text="HASŁO GARMIN CONNECT" Style="{StaticResource LabelMicro}" Margin="0,14,0,4"/>
+                    <PasswordBox x:Name="PasswordBoxControl" Style="{StaticResource DarkPasswordBox}"
+                                 PasswordChanged="OnPasswordChanged"/>
+
+                    <TextBlock Text="ANTHROPIC API KEY" Style="{StaticResource LabelMicro}" Margin="0,14,0,4"/>
+                    <TextBox Style="{StaticResource DarkTextBox}"
+                             Text="{Binding AnthropicApiKey, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock Foreground="{StaticResource TextMute}" FontSize="11" Margin="2,4,0,0"
+                               Text="sk-ant-... · klucz uzyskasz na console.anthropic.com"/>
+
+                    <Grid Margin="0,14,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="14"/>
+                            <ColumnDefinition Width="160"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="MODEL CLAUDE" Style="{StaticResource LabelMicro}"/>
+                            <ComboBox Margin="0,4,0,0" Style="{StaticResource DarkComboBox}"
+                                      SelectedValue="{Binding Model}"
+                                      SelectedValuePath="Content">
+                                <ComboBoxItem Content="claude-haiku-4-5-20251001"/>
+                                <ComboBoxItem Content="claude-sonnet-4-6"/>
+                                <ComboBoxItem Content="claude-opus-4-7"/>
+                            </ComboBox>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="LICZBA DNI" Style="{StaticResource LabelMicro}"/>
+                            <TextBox Style="{StaticResource DarkTextBox}" Margin="0,4,0,0"
+                                     Text="{Binding DaysToFetch}"/>
+                        </StackPanel>
+                    </Grid>
                 </StackPanel>
-                <StackPanel Grid.Column="2">
-                    <TextBlock Text="Liczba dni do pobrania"/>
-                    <TextBox Text="{Binding DaysToFetch}" Margin="0,4,0,0" Padding="6,4"/>
-                </StackPanel>
-            </Grid>
-        </StackPanel>
-
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
-            <TextBlock Text="Zapisano." Foreground="Green" VerticalAlignment="Center" Margin="0,0,12,0"
-                       Visibility="{Binding Saved, Converter={StaticResource BoolToVis}}"/>
-            <Button Content="Zapisz" Width="100" Padding="8,4" Command="{Binding SaveCommand}"
-                    Click="OnSaveClick"/>
-            <Button Content="Zamknij" Width="100" Padding="8,4" Margin="8,0,0,0" Click="OnCloseClick"/>
-        </StackPanel>
-    </Grid>
+            </ScrollViewer>
+        </DockPanel>
+    </Border>
 </Window>

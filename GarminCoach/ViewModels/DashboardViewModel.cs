@@ -160,24 +160,33 @@ public sealed partial class DashboardViewModel : ObservableObject
 
         var labels = ordered.Select(d => d.Date.ToString("MM-dd")).ToArray();
 
+        var accent = SKColor.Parse("FF6B35");
+        var danger = SKColor.Parse("F85149");
+        var ok = SKColor.Parse("3FB950");
+        var warn = SKColor.Parse("D29922");
+        var cyan = SKColor.Parse("39C5CF");
+        var bgCard = SKColor.Parse("131922");
+        var textMute = SKColor.Parse("484F58");
+
         // Resting HR line
         HrSeries.Clear();
         HrSeries.Add(new LineSeries<double?>
         {
             Name = "Resting HR",
             Values = ordered.Select(d => (double?)d.RestingHeartRate).ToArray(),
-            Stroke = new SolidColorPaint(SKColor.Parse("E57373")) { StrokeThickness = 2.5f },
-            GeometryStroke = new SolidColorPaint(SKColor.Parse("E57373")),
-            GeometryFill = new SolidColorPaint(SKColors.White),
+            Stroke = new SolidColorPaint(danger) { StrokeThickness = 2.5f },
+            GeometryStroke = new SolidColorPaint(danger),
+            GeometryFill = new SolidColorPaint(bgCard),
+            GeometrySize = 8,
             Fill = null
         });
 
         // Sleep stages stacked
         SleepStagesSeries.Clear();
-        SleepStagesSeries.Add(MakeStackedColumn("Głęboki", ordered.Select(d => d.SleepDeepHours).ToArray(), "1A237E"));
-        SleepStagesSeries.Add(MakeStackedColumn("Lekki",   ordered.Select(d => d.SleepLightHours).ToArray(), "5C6BC0"));
-        SleepStagesSeries.Add(MakeStackedColumn("REM",     ordered.Select(d => d.SleepRemHours).ToArray(),   "9575CD"));
-        SleepStagesSeries.Add(MakeStackedColumn("Awake",   ordered.Select(d => d.SleepAwakeHours).ToArray(), "EF9A9A"));
+        SleepStagesSeries.Add(MakeStackedColumn("Głęboki", ordered.Select(d => d.SleepDeepHours).ToArray(), "3949AB"));
+        SleepStagesSeries.Add(MakeStackedColumn("Lekki",   ordered.Select(d => d.SleepLightHours).ToArray(), "7986CB"));
+        SleepStagesSeries.Add(MakeStackedColumn("REM",     ordered.Select(d => d.SleepRemHours).ToArray(),   "BC8CFF"));
+        SleepStagesSeries.Add(MakeStackedColumn("Awake",   ordered.Select(d => d.SleepAwakeHours).ToArray(), "F85149"));
 
         // HRV line
         HrvSeries.Clear();
@@ -185,9 +194,10 @@ public sealed partial class DashboardViewModel : ObservableObject
         {
             Name = "HRV (ms)",
             Values = ordered.Select(d => (double?)d.HrvOvernight).ToArray(),
-            Stroke = new SolidColorPaint(SKColor.Parse("66BB6A")) { StrokeThickness = 2.5f },
-            GeometryStroke = new SolidColorPaint(SKColor.Parse("66BB6A")),
-            GeometryFill = new SolidColorPaint(SKColors.White),
+            Stroke = new SolidColorPaint(cyan) { StrokeThickness = 2.5f },
+            GeometryStroke = new SolidColorPaint(cyan),
+            GeometryFill = new SolidColorPaint(bgCard),
+            GeometrySize = 8,
             Fill = null
         });
 
@@ -197,13 +207,15 @@ public sealed partial class DashboardViewModel : ObservableObject
         {
             Name = "Naładowane",
             Values = ordered.Select(d => (double?)d.BodyBatteryCharged).ToArray(),
-            Fill = new SolidColorPaint(SKColor.Parse("81C784"))
+            Fill = new SolidColorPaint(ok),
+            Stroke = null
         });
         BodyBatterySeries.Add(new ColumnSeries<double?>
         {
             Name = "Zużyte",
             Values = ordered.Select(d => d.BodyBatteryDrained.HasValue ? (double?)-d.BodyBatteryDrained.Value : null).ToArray(),
-            Fill = new SolidColorPaint(SKColor.Parse("E57373"))
+            Fill = new SolidColorPaint(danger),
+            Stroke = null
         });
 
         // Activity volume per day by category (stacked column)
@@ -226,33 +238,50 @@ public sealed partial class DashboardViewModel : ObservableObject
         {
             Name = "Stres",
             Values = ordered.Select(d => (double?)d.StressAvg).ToArray(),
-            Stroke = new SolidColorPaint(SKColor.Parse("FFA726")) { StrokeThickness = 2.5f },
-            GeometryStroke = new SolidColorPaint(SKColor.Parse("FFA726")),
-            GeometryFill = new SolidColorPaint(SKColors.White),
+            Stroke = new SolidColorPaint(warn) { StrokeThickness = 2.5f },
+            GeometryStroke = new SolidColorPaint(warn),
+            GeometryFill = new SolidColorPaint(bgCard),
+            GeometrySize = 8,
             Fill = null
         });
 
+        var axisPaint = new SolidColorPaint(textMute) { StrokeThickness = 1 };
+        var separatorPaint = new SolidColorPaint(SKColor.Parse("1F262F")) { StrokeThickness = 1 };
+
         XAxes.Clear();
-        XAxes.Add(new Axis { Labels = labels, TextSize = 11 });
+        XAxes.Add(NewAxis(labels, null, null, axisPaint, separatorPaint));
 
         YAxesHr.Clear();
-        YAxesHr.Add(new Axis { MinLimit = 40, MaxLimit = 80, TextSize = 11 });
+        YAxesHr.Add(NewAxis(null, 40, 80, axisPaint, separatorPaint));
 
         YAxesSleep.Clear();
-        YAxesSleep.Add(new Axis { MinLimit = 0, MaxLimit = 10, TextSize = 11 });
+        YAxesSleep.Add(NewAxis(null, 0, 10, axisPaint, separatorPaint));
 
         YAxesHrv.Clear();
-        YAxesHrv.Add(new Axis { MinLimit = 20, MaxLimit = 90, TextSize = 11 });
+        YAxesHrv.Add(NewAxis(null, 20, 90, axisPaint, separatorPaint));
 
         YAxesBB.Clear();
-        YAxesBB.Add(new Axis { MinLimit = -100, MaxLimit = 100, TextSize = 11 });
+        YAxesBB.Add(NewAxis(null, -100, 100, axisPaint, separatorPaint));
 
         YAxesVolume.Clear();
-        YAxesVolume.Add(new Axis { MinLimit = 0, TextSize = 11, Name = "min" });
+        YAxesVolume.Add(NewAxis(null, 0, null, axisPaint, separatorPaint));
 
         YAxesStress.Clear();
-        YAxesStress.Add(new Axis { MinLimit = 0, MaxLimit = 100, TextSize = 11 });
+        YAxesStress.Add(NewAxis(null, 0, 100, axisPaint, separatorPaint));
     }
+
+    private static Axis NewAxis(string[]? labels, double? min, double? max,
+        SolidColorPaint axisPaint, SolidColorPaint separatorPaint)
+        => new()
+        {
+            Labels = labels,
+            MinLimit = min,
+            MaxLimit = max,
+            TextSize = 10.5,
+            LabelsPaint = axisPaint,
+            SeparatorsPaint = separatorPaint,
+            ShowSeparatorLines = true
+        };
 
     private static StackedColumnSeries<double?> MakeStackedColumn(
         string name, double?[] values, string hexColor)

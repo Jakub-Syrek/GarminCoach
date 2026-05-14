@@ -3,8 +3,24 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:conv="clr-namespace:GarminCoach.Converters">
     <Application.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
-        <conv:InvertBoolConverter x:Key="InvertBool"/>
-        <conv:StringToVisibilityConverter x:Key="StringToVis"/>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/Colors.xaml"/>
+                <ResourceDictionary Source="Themes/Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+            <conv:InvertBoolConverter x:Key="InvertBool"/>
+            <conv:StringToVisibilityConverter x:Key="StringToVis"/>
+
+            <FontFamily x:Key="UiFont">Segoe UI Variable Text, Segoe UI</FontFamily>
+            <FontFamily x:Key="UiFontDisplay">Segoe UI Variable Display, Segoe UI</FontFamily>
+            <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+
+            <Style TargetType="Window">
+                <Setter Property="FontFamily" Value="{StaticResource UiFont}"/>
+                <Setter Property="Background" Value="{StaticResource Bg0}"/>
+            </Style>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>
