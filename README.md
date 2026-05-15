@@ -1,14 +1,14 @@
 # GarminCoach
 
-[![CI](https://github.com/Jakub-Syrek/GarminCoach1/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Jakub-Syrek/GarminCoach1/actions/workflows/ci.yml)
-[![Release](https://github.com/Jakub-Syrek/GarminCoach1/actions/workflows/release.yml/badge.svg)](https://github.com/Jakub-Syrek/GarminCoach1/actions/workflows/release.yml)
-[![Latest release](https://img.shields.io/github/v/release/Jakub-Syrek/GarminCoach1?include_prereleases&sort=semver)](https://github.com/Jakub-Syrek/GarminCoach1/releases)
+[![CI](https://github.com/Jakub-Syrek/GarminCoach/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Jakub-Syrek/GarminCoach/actions/workflows/ci.yml)
+[![Release](https://github.com/Jakub-Syrek/GarminCoach/actions/workflows/release.yml/badge.svg)](https://github.com/Jakub-Syrek/GarminCoach/actions/workflows/release.yml)
+[![Latest release](https://img.shields.io/github/v/release/Jakub-Syrek/GarminCoach?include_prereleases&sort=semver)](https://github.com/Jakub-Syrek/GarminCoach/releases)
 ![.NET](https://img.shields.io/badge/.NET-8.0--windows-512BD4?logo=dotnet&logoColor=white)
 ![Platform](https://img.shields.io/badge/platform-Windows-0078D6?logo=windows&logoColor=white)
 [![Garmin Connect](https://img.shields.io/badge/data-Garmin%20Connect-007CC3?logo=garmin&logoColor=white)](https://connect.garmin.com)
 [![Anthropic Claude](https://img.shields.io/badge/AI-Anthropic%20Claude-CC785C)](https://www.anthropic.com)
-![Last commit](https://img.shields.io/github/last-commit/Jakub-Syrek/GarminCoach1)
-![Code size](https://img.shields.io/github/languages/code-size/Jakub-Syrek/GarminCoach1)
+![Last commit](https://img.shields.io/github/last-commit/Jakub-Syrek/GarminCoach)
+![Code size](https://img.shields.io/github/languages/code-size/Jakub-Syrek/GarminCoach)
 
 WPF desktop app (.NET 8, Windows). Reads your Garmin Connect data and lets a Claude-powered AI coach analyze it. Two-pane layout: dashboard on the left (cards, charts, recent activities, generated written report), chat on the right (multi-turn conversation with the coach, fed the same data as context).
 
