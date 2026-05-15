@@ -1,5 +1,15 @@
 # GarminCoach
 
+[![CI](https://github.com/Jakub-Syrek/GarminCoach/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Jakub-Syrek/GarminCoach/actions/workflows/ci.yml)
+[![Release](https://github.com/Jakub-Syrek/GarminCoach/actions/workflows/release.yml/badge.svg)](https://github.com/Jakub-Syrek/GarminCoach/actions/workflows/release.yml)
+[![Latest release](https://img.shields.io/github/v/release/Jakub-Syrek/GarminCoach?include_prereleases&sort=semver)](https://github.com/Jakub-Syrek/GarminCoach/releases)
+![.NET](https://img.shields.io/badge/.NET-8.0--windows-512BD4?logo=dotnet&logoColor=white)
+![Platform](https://img.shields.io/badge/platform-Windows-0078D6?logo=windows&logoColor=white)
+[![Garmin Connect](https://img.shields.io/badge/data-Garmin%20Connect-007CC3?logo=garmin&logoColor=white)](https://connect.garmin.com)
+[![Anthropic Claude](https://img.shields.io/badge/AI-Anthropic%20Claude-CC785C)](https://www.anthropic.com)
+![Last commit](https://img.shields.io/github/last-commit/Jakub-Syrek/GarminCoach)
+![Code size](https://img.shields.io/github/languages/code-size/Jakub-Syrek/GarminCoach)
+
 WPF desktop app (.NET 8, Windows). Reads your Garmin Connect data and lets a Claude-powered AI coach analyze it. Two-pane layout: dashboard on the left (cards, charts, recent activities, generated written report), chat on the right (multi-turn conversation with the coach, fed the same data as context).
 
 ## About
@@ -40,6 +50,25 @@ On first launch the settings dialog opens. Provide:
 Click "Odśwież dane" on the dashboard to fetch from Garmin. Then either "Generuj raport coacha" for a written summary, or just type in the chat panel on the right.
 
 `Ctrl+Enter` in the chat box sends the message.
+
+## CI / CD
+
+Two GitHub Actions workflows:
+
+- **[ci.yml](.github/workflows/ci.yml)** — runs on every push to `main` and every PR targeting `main`. Restore → build app → build tests → `dotnet test` → upload `.trx` artifact. Pinned to `windows-latest` because of WPF.
+- **[release.yml](.github/workflows/release.yml)** — runs when a `v*` tag is pushed. Publishes two flavors of the app:
+  - `GarminCoach-<ver>-win-x64-selfcontained.zip` — single-file `.exe` with the .NET 8 runtime baked in (~80 MB, no install needed)
+  - `GarminCoach-<ver>-win-x64-framework-dependent.zip` — smaller (~5 MB) but requires .NET 8 Desktop Runtime installed
+  Both are attached to an auto-created GitHub Release with auto-generated release notes from the commit history since the previous tag.
+
+To cut a release:
+
+```powershell
+git tag v0.2.0
+git push origin v0.2.0
+```
+
+Dependabot (`.github/dependabot.yml`) opens weekly PRs for outdated NuGet and GitHub Actions versions.
 
 ## Architecture
 

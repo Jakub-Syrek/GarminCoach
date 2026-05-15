@@ -137,7 +137,8 @@ public sealed partial class DashboardViewModel : ObservableObject
     private void UpdateChartsAndCards(CoachSnapshot snap)
     {
         var ordered = snap.Days.OrderBy(d => d.Date).ToList();
-        var latest = ordered.LastOrDefault();
+        // Today is usually still aggregating — fall back to last day that actually has data.
+        var latest = ordered.LastOrDefault(d => d.HasAnyData) ?? ordered.LastOrDefault();
 
         StepsToday = latest?.Steps.HasValue == true
             ? latest.Steps!.Value.ToString("N0")
@@ -251,23 +252,48 @@ public sealed partial class DashboardViewModel : ObservableObject
         XAxes.Clear();
         XAxes.Add(NewAxis(labels, null, null, axisPaint, separatorPaint));
 
+        // Tight, data-driven Y limits so series fill the chart area.
+        var hrVals = ordered.Select(d => (double?)d.RestingHeartRate).Where(v => v.HasValue).Select(v => v!.Value).ToArray();
         YAxesHr.Clear();
-        YAxesHr.Add(NewAxis(null, 40, 80, axisPaint, separatorPaint));
+        YAxesHr.Add(NewAxis(null, FloorPad(hrVals, step: 5, pad: 3), CeilPad(hrVals, step: 5, pad: 3), axisPaint, separatorPaint));
 
+        var sleepTotals = ordered
+            .Select(d => (d.SleepDeepHours ?? 0) + (d.SleepLightHours ?? 0) + (d.SleepRemHours ?? 0) + (d.SleepAwakeHours ?? 0))
+            .Where(v => v > 0).ToArray();
         YAxesSleep.Clear();
-        YAxesSleep.Add(NewAxis(null, 0, 10, axisPaint, separatorPaint));
+        YAxesSleep.Add(NewAxis(null, 0, sleepTotals.Length > 0 ? Math.Ceiling(sleepTotals.Max() + 0.5) : 10, axisPaint, separatorPaint));
 
+        var hrvVals = ordered.Select(d => (double?)d.HrvOvernight).Where(v => v.HasValue).Select(v => v!.Value).ToArray();
         YAxesHrv.Clear();
-        YAxesHrv.Add(NewAxis(null, 20, 90, axisPaint, separatorPaint));
+        YAxesHrv.Add(NewAxis(null, FloorPad(hrvVals, step: 5, pad: 5), CeilPad(hrvVals, step: 5, pad: 5), axisPaint, separatorPaint));
 
+        var bbCharged = ordered.Select(d => (double)(d.BodyBatteryCharged ?? 0)).Where(v => v > 0).ToArray();
+        var bbDrained = ordered.Select(d => (double)(d.BodyBatteryDrained ?? 0)).Where(v => v > 0).ToArray();
+        var bbMax = (new[] { bbCharged.DefaultIfEmpty(0).Max(), bbDrained.DefaultIfEmpty(0).Max() }).Max();
+        var bbLimit = bbMax > 0 ? Math.Ceiling((bbMax + 10) / 10.0) * 10 : 60;
         YAxesBB.Clear();
-        YAxesBB.Add(NewAxis(null, -100, 100, axisPaint, separatorPaint));
+        YAxesBB.Add(NewAxis(null, -bbLimit, bbLimit, axisPaint, separatorPaint));
 
         YAxesVolume.Clear();
         YAxesVolume.Add(NewAxis(null, 0, null, axisPaint, separatorPaint));
 
+        var stressVals = ordered.Select(d => (double?)d.StressAvg).Where(v => v.HasValue).Select(v => v!.Value).ToArray();
         YAxesStress.Clear();
-        YAxesStress.Add(NewAxis(null, 0, 100, axisPaint, separatorPaint));
+        YAxesStress.Add(NewAxis(null, FloorPad(stressVals, step: 10, pad: 5), CeilPad(stressVals, step: 10, pad: 5), axisPaint, separatorPaint));
+    }
+
+    private static double? FloorPad(double[] values, double step, double pad)
+    {
+        if (values.Length == 0) return null;
+        var v = values.Min() - pad;
+        return Math.Floor(v / step) * step;
+    }
+
+    private static double? CeilPad(double[] values, double step, double pad)
+    {
+        if (values.Length == 0) return null;
+        var v = values.Max() + pad;
+        return Math.Ceiling(v / step) * step;
     }
 
     private static Axis NewAxis(string[]? labels, double? min, double? max,
