@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Resolve version from tag
+        id: ver
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $version = $tag.TrimStart('v')
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+
+      - name: Restore
+        run: dotnet restore GarminCoach/GarminCoach.csproj
+
+      - name: Publish self-contained win-x64
+        run: >
+          dotnet publish GarminCoach/GarminCoach.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:DebugType=none
+          -p:Version=${{ steps.ver.outputs.version }}
+          -o publish/win-x64
+          /p:NoWarn=NU1701
+
+      - name: Publish framework-dependent win-x64
+        run: >
+          dotnet publish GarminCoach/GarminCoach.csproj
+          -c Release
+          -r win-x64
+          --self-contained false
+          -p:DebugType=none
+          -p:Version=${{ steps.ver.outputs.version }}
+          -o publish/win-x64-framework
+          /p:NoWarn=NU1701
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $v = "${{ steps.ver.outputs.version }}"
+          Compress-Archive -Path publish/win-x64/* -DestinationPath "GarminCoach-$v-win-x64-selfcontained.zip"
+          Compress-Archive -Path publish/win-x64-framework/* -DestinationPath "GarminCoach-$v-win-x64-framework-dependent.zip"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.tag }}
+          name: GarminCoach ${{ steps.ver.outputs.tag }}
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+          files: |
+            GarminCoach-${{ steps.ver.outputs.version }}-win-x64-selfcontained.zip
+            GarminCoach-${{ steps.ver.outputs.version }}-win-x64-framework-dependent.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

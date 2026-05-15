@@ -1,37 +1,77 @@
 <Window x:Class="GarminCoach.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         xmlns:views="clr-namespace:GarminCoach.Views"
-        Title="GarminCoach" Height="820" Width="1400"
-        Background="#FFFAFAFB"
-        WindowStartupLocation="CenterScreen">
-    <DockPanel>
-        <Border DockPanel.Dock="Top" Background="#FF1F2329" Padding="14,10">
-            <Grid>
+        Title="GarminCoach"
+        Height="900" Width="1500"
+        MinHeight="600" MinWidth="1100"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource Bg0}"
+        Foreground="{StaticResource TextHi}"
+        FontFamily="{StaticResource UiFont}"
+        WindowStyle="None"
+        AllowsTransparency="False"
+        ResizeMode="CanResize">
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="44"
+                            ResizeBorderThickness="6"
+                            CornerRadius="0"
+                            GlassFrameThickness="0"
+                            UseAeroCaptionButtons="False"/>
+    </shell:WindowChrome.WindowChrome>
+
+    <Border BorderBrush="{StaticResource Border0}" BorderThickness="1">
+        <DockPanel LastChildFill="True">
+
+            <!-- Custom title bar -->
+            <Border DockPanel.Dock="Top" Height="44" Background="{StaticResource HeaderBg}"
+                    BorderBrush="{StaticResource Border0}" BorderThickness="0,0,0,1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="14,0,0,0" VerticalAlignment="Center">
+                        <Border Width="24" Height="24" CornerRadius="6" Background="{StaticResource AccentBg}">
+                            <TextBlock Text="G" Foreground="White" FontSize="14" FontWeight="Bold"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="GarminCoach" Margin="10,0,0,0" VerticalAlignment="Center"
+                                   Foreground="{StaticResource TextHi}" FontSize="13" FontWeight="SemiBold"/>
+                        <TextBlock Text="•" Margin="10,0" VerticalAlignment="Center"
+                                   Foreground="{StaticResource TextMute}"/>
+                        <TextBlock Text="AI training coach" VerticalAlignment="Center"
+                                   Foreground="{StaticResource TextLo}" FontSize="12"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" WindowChrome.IsHitTestVisibleInChrome="True">
+                        <Button Style="{StaticResource IconButton}" Content="&#xE713;"
+                                ToolTip="Ustawienia" Click="OnSettingsClick"/>
+                        <Button Style="{StaticResource IconButton}" Content="&#xE921;"
+                                ToolTip="Minimalizuj" Click="OnMinimize"/>
+                        <Button x:Name="MaximizeBtn" Style="{StaticResource IconButton}" Content="&#xE922;"
+                                ToolTip="Maksymalizuj" Click="OnMaximize"/>
+                        <Button Style="{StaticResource IconButton}" Content="&#xE8BB;"
+                                ToolTip="Zamknij" Click="OnClose"
+                                Foreground="{StaticResource TextLo}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Body: split panel -->
+            <Grid Background="{StaticResource Bg0}">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="2*" MinWidth="600"/>
+                    <ColumnDefinition Width="1"/>
+                    <ColumnDefinition Width="*" MinWidth="380"/>
                 </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0">
-                    <TextBlock Text="GarminCoach" Foreground="White" FontSize="16" FontWeight="SemiBold"/>
-                    <TextBlock Text="Dashboard + AI coach" Foreground="#FFA0A0A8" FontSize="11"/>
-                </StackPanel>
-                <Button Grid.Column="1" Content="Ustawienia" Padding="12,4"
-                        Click="OnSettingsClick"
-                        Background="#FF2F343C" Foreground="White" BorderBrush="#FF3F454F"/>
+
+                <views:DashboardView Grid.Column="0" DataContext="{Binding Dashboard}"/>
+                <Rectangle Grid.Column="1" Fill="{StaticResource Border0}"/>
+                <views:ChatView Grid.Column="2" DataContext="{Binding Chat}"/>
             </Grid>
-        </Border>
-
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*" MinWidth="500"/>
-                <ColumnDefinition Width="4"/>
-                <ColumnDefinition Width="*" MinWidth="360"/>
-            </Grid.ColumnDefinitions>
-
-            <views:DashboardView Grid.Column="0" DataContext="{Binding Dashboard}"/>
-            <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Stretch" Background="#FFE5E5E8"/>
-            <views:ChatView Grid.Column="2" DataContext="{Binding Chat}"/>
-        </Grid>
-    </DockPanel>
+        </DockPanel>
+    </Border>
 </Window>

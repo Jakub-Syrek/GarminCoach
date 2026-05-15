@@ -1,0 +1,34 @@
+version: 2
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/GarminCoach"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "deps"
+    commit-message:
+      prefix: "deps"
+
+  - package-ecosystem: "nuget"
+    directory: "/GarminCoach.Tests"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3
+    labels:
+      - "deps"
+      - "tests"
+    commit-message:
+      prefix: "deps(tests)"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "ci"
+    commit-message:
+      prefix: "ci"
