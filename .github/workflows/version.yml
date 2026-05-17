@@ -1,0 +1,126 @@
+name: Version
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: version-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    # Skip the runs triggered by our own release commit.
+    if: "!startsWith(github.event.head_commit.message, 'chore(release):')"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Configure git author
+        run: |
+          git config user.name "Jakub Syrek"
+          git config user.email "jakubvonsyrek@gmail.com"
+
+      - name: Compute next version
+        id: ver
+        shell: bash
+        run: |
+          set -euo pipefail
+          last_tag=$(git tag --list 'v*' --sort=-v:refname | head -n 1 || true)
+          if [ -z "$last_tag" ]; then
+            range=""
+            current="0.0.0"
+          else
+            range="$last_tag..HEAD"
+            current="${last_tag#v}"
+          fi
+          echo "Last tag: ${last_tag:-<none>} (current=$current)"
+
+          IFS='.' read -r major minor patch <<< "$current"
+
+          if [ -z "$range" ]; then
+            commits=$(git log --pretty=format:'%s%n%b%n---END---' HEAD)
+          else
+            commits=$(git log --pretty=format:'%s%n%b%n---END---' "$range")
+          fi
+
+          if [ -z "$commits" ]; then
+            echo "No commits since $last_tag — nothing to release."
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          bump="patch"
+          while IFS= read -r line; do
+            if [[ "$line" =~ BREAKING\ CHANGE ]]; then
+              bump="major"; break
+            fi
+            if [[ "$line" =~ ^[a-zA-Z]+(\([^)]+\))?!: ]]; then
+              bump="major"; break
+            fi
+            if [[ "$bump" != "major" && "$line" =~ ^feat(\([^)]+\))?: ]]; then
+              bump="minor"
+            fi
+          done <<< "$commits"
+
+          case "$bump" in
+            major) major=$((major + 1)); minor=0; patch=0 ;;
+            minor) minor=$((minor + 1)); patch=0 ;;
+            patch) patch=$((patch + 1)) ;;
+          esac
+
+          next="$major.$minor.$patch"
+          echo "Bump: $bump -> v$next"
+          echo "version=$next" >> "$GITHUB_OUTPUT"
+          echo "tag=v$next" >> "$GITHUB_OUTPUT"
+          echo "bump=$bump" >> "$GITHUB_OUTPUT"
+          echo "release=true" >> "$GITHUB_OUTPUT"
+
+      - name: Update csproj version
+        if: steps.ver.outputs.release == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          file="GarminCoach/GarminCoach.csproj"
+          version="${{ steps.ver.outputs.version }}"
+          if grep -q "<Version>" "$file"; then
+            sed -i "s|<Version>[^<]*</Version>|<Version>${version}</Version>|" "$file"
+          else
+            sed -i "s|<UserSecretsId>|<Version>${version}</Version>\n    <UserSecretsId>|" "$file"
+          fi
+          echo "--- updated csproj ---"
+          grep -n "<Version>" "$file" || true
+
+      - name: Commit, tag, and push
+        if: steps.ver.outputs.release == 'true'
+        run: |
+          set -euo pipefail
+          git add GarminCoach/GarminCoach.csproj
+          if git diff --cached --quiet; then
+            echo "No csproj changes to commit; tagging current HEAD."
+          else
+            git commit -m "chore(release): ${{ steps.ver.outputs.tag }}"
+          fi
+          git tag -a "${{ steps.ver.outputs.tag }}" -m "${{ steps.ver.outputs.tag }}"
+          git push origin HEAD:main
+          git push origin "${{ steps.ver.outputs.tag }}"
+
+      - name: Create GitHub Release
+        if: steps.ver.outputs.release == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.tag }}
+          name: GarminCoach ${{ steps.ver.outputs.tag }}
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
