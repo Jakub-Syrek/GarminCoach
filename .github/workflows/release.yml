@@ -65,7 +65,7 @@ jobs:
           Compress-Archive -Path publish/win-x64-framework/* -DestinationPath "GarminCoach-$v-win-x64-framework-dependent.zip"
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.ver.outputs.tag }}
           name: GarminCoach ${{ steps.ver.outputs.tag }}
